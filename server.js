@@ -1,19 +1,19 @@
 const express = require('express')
-const app = express()
-const bodyParser = require('body-parser')
+const app = express()// is actually just a variable for the express function
+const bodyParser = require('body-parser')// looks inside any request we send to the server but this is now deprecated 
 const MongoClient = require('mongodb').MongoClient
 
 var db, collection;
 
-const url = "mongodb+srv://demo:demo@cluster0-q2ojb.mongodb.net/test?retryWrites=true";
-const dbName = "demo";
+const url = "mongodb+srv://21sav:savage@cluster0.zq7jy.mongodb.net/?retryWrites=true&w=majority";
+const dbName = "savagedemo";
 
 app.listen(3000, () => {
     MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (error, client) => {
         if(error) {
             throw error;
         }
-        db = client.db(dbName);
+        db = client.db(dbName);//setting db variable to the database
         console.log("Connected to `" + dbName + "`!");
     });
 });
@@ -21,7 +21,7 @@ app.listen(3000, () => {
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
-app.use(express.static('public'))
+app.use(express.static('public'))// using ejs as templating language
 
 app.get('/', (req, res) => {
   db.collection('messages').find().toArray((err, result) => {
@@ -42,16 +42,31 @@ app.put('/messages', (req, res) => {
   db.collection('messages')
   .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
     $set: {
-      thumbUp:req.body.thumbUp + 1
+      thumbUp:req.body.thumbUp + 1,
     }
   }, {
     sort: {_id: -1},
-    upsert: true
+    upsert: false
   }, (err, result) => {
     if (err) return res.send(err)
     res.send(result)
   })
 })
+app.put('/messages2', (req, res) => {
+  db.collection('messages')
+  .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
+    $set: {
+      thumbUp:req.body.thumbUp - 1,
+    }
+  }, {
+    sort: {_id: -1},
+    upsert: false
+  }, (err, result) => {
+    if (err) return res.send(err)
+    res.send(result)
+  })
+})
+
 
 app.delete('/messages', (req, res) => {
   db.collection('messages').findOneAndDelete({name: req.body.name, msg: req.body.msg}, (err, result) => {
